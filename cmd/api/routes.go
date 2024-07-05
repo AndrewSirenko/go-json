@@ -7,17 +7,19 @@ import (
 )
 
 func (app *application) routes() http.Handler {
-	// Initialize a new httprouter router instance.
 	router := httprouter.New()
 
-	// Register the relevant methods, URL patterns and handler functions for our
-	// endpoints using the HandlerFunc() method. Note that http.MethodGet and
-	// http.MethodPost are constants which equate to the strings "GET" and "POST"
-	// respectively.
+	router.NotFound = http.HandlerFunc(app.notFoundResponse)
+	router.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
+
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
+
+	// Add the route for the GET /v1/movies endpoint.
+	router.HandlerFunc(http.MethodGet, "/v1/movies", app.listMoviesHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/movies", app.createMovieHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/movies/:id", app.showMovieHandler)
+	router.HandlerFunc(http.MethodPatch, "/v1/movies/:id", app.updateMovieHandler)
+	router.HandlerFunc(http.MethodDelete, "/v1/movies/:id", app.deleteMovieHandler)
 
-	// Return the httprouter instance.
-	return router
+	return app.recoverPanic(router)
 }
