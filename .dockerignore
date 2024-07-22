@@ -1,0 +1,18 @@
+# Exclude locally vendored dependencies.
+vendor/
+
+# Exclude "build-time" ignore files.
+.dockerignore
+.gcloudignore
+
+# Exclude git, git history and configuration.
+.git
+.gitignore
+
+# Exclude misc
+.envrc
+*.idea
+Makefile
+.github/
+bin/
+migrations/
