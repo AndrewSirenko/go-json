@@ -4,10 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"flag"
-	"fmt"
 	"greenlight/internal/data"
 	"log/slog"
-	"net/http"
 	"os"
 	"time"
 
@@ -64,33 +62,21 @@ func main() {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
-
 	defer db.Close()
 
 	logger.Info("database connection pool established")
 
-	// Use the data.NewModels() function to initialize a Models struct, passing in the
-	// connection pool as a parameter.
 	app := &application{
 		config: cfg,
 		logger: logger,
 		models: data.NewModels(db),
 	}
 
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.port),
-		Handler:      app.routes(),
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
+	err = app.serve()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
-
-	logger.Info("starting server", "addr", srv.Addr, "env", cfg.env)
-
-	err = srv.ListenAndServe()
-	logger.Error(err.Error())
-	os.Exit(1)
 }
 
 func openDB(cfg config) (*sql.DB, error) {
